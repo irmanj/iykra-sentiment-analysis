@@ -55,7 +55,26 @@ def classify():
         # IMPORTANT: classifier.predict returns an array, so get the first element
         label = app.classifier.predict(app.feature_extractor.transform([text]))[0]
 
-        # EXERCISE 10: Return something like: {'text': text, 'sentiment':...}
+        return reply_success(data={
+            "text": text,
+            "sentiment": LABELS[label]
+        })
+
+    return reply_error(code=400, message="Text is not specified")
+
+@app.route("/feedback", methods=["GET","POST"])
+def feedback():
+    if request.method == "GET":
+        text = request.args.get("text", None)
+    elif request.method == "POST":
+        json_req = request.get_json()
+        text = json_req["text"]
+    else:
+        return reply_error(code=400, message="Supported method is 'GET' and 'POST'")
+    
+    if text:
+        label = app.classifier.predict(app.feature_extractor.transform([text]))[0]
+
         return reply_success(data={
             "text": text,
             "sentiment": LABELS[label]
