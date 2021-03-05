@@ -4,162 +4,116 @@ A simple sentiment analysis module wrapped in `Flask`.
 
 This repo is used as a resource for model deployment sharing at `IYKRA` (https://iykra.com/).
 
-## Getting Ready
+## Assignment
 
-### Git
+You can choose to work on one of the assignments below
 
-- You will use Git (and GitHub) to access this code base and to submit the assignment later.
+### Assignment 1: Model Optimization
 
-- Create a GitHub account (https://github.com/)
+- Take a look at the file `inference.py`. Run it:
 
-- Install Git: https://www.atlassian.com/git/tutorials/install-git.
+`python3 inference.py 10` or `python inference.py 10`
 
-- Learn a bit about Git: https://opensource.com/article/18/1/step-step-guide-git.
+- It will load the saved extractor and model file and do inference on the whole data locally.
+The performance and the inference time will be shown as well.
 
-- (Optional) If you want to dive deeper: https://towardsdatascience.com/getting-started-with-git-and-github-6fcd0f2d4ac6.
+- For the experiment, do it 10 times (or more, feel free to change it) and take the average inference time. This is to make the result more objective.
 
-- Fork this repo, follow the instruction here: https://docs.github.com/en/github/getting-started-with-github/fork-a-repo)
+- Screenshot/copy the result.
 
-- Clone the forked repo by running the following command inside your terminal:
+- Your task is to modify the `train.py` and/or `preprocess.py` and train your own model.
 
-`git clone https://github.com/{Your-GitHub-username}/iykra-sentiment-analysis`
+- Search for `"# NOTE"` in both files where I put the part of the code I suggest you to modify (but feel free to modify other parts too!).
 
-- It will create `iykra-sentiment-analysis` directory in your local machine, please remember the path to this directory.
+- The goal is to reduce the total inference time without losing too much performance. Say you can reduce the inference time by 20% with only losing 2% accuracy. That's respectable.
 
-### Python
+- Report your experiment result and detail on what you do in 1 page PDF file (yes, be concise!). Explain why your solution works!
 
-- We're using `Python` as our main programming language (and some libraries in it).
+- If you didn't manage to reduce the inference time that's okay. Just report what you do and argue why it fails.
 
-- Install `Python3.6` or above (https://realpython.com/installing-python/).
+- Some hint to get you kicking:
 
-- Check it, for example you can run: `python3 --version` or `python --version` in your terminal.
+1. Take a look into `TfidfVectorizer` hyperparameters, what can you change/add to improve the speed?
 
-- You're okay if the output says it's `Python3.6` or above.
+2. Explore other kind of text vectorizer such as: https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html.
 
-### IDE
+3. Do we actually need a `stemmer`? Investigate!
 
-- Install your favorite `IDE`, mine is `Atom` (https://atom.io/). Atom is very light (got it?)!
+4. Are there faster models, e.g. https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html?
 
-- Some other alternatives are:
+5. Is there any unmeaningful words we can remove in preprocessing? Google `"stopwords"`.
 
-1. `PyCharm` (https://www.jetbrains.com/pycharm/)
+### Assignment 2: Model Update
 
-2. `Microsoft Visual Studio` (https://visualstudio.microsoft.com/)
+- Suppose you notice that there are false positive or negative from the model prediction.
 
-### Postman
-
-- We will use `Postman` to test our deployed ML model.
-
-- Install `Postman` (https://learning.postman.com/docs/getting-started/installation-and-updates/).
-
-### Heroku
-
-- Please create a `Heroku` account: (https://www.heroku.com/).
-
-- (Optional) Install `Heroku CLI` (https://devcenter.heroku.com/articles/heroku-command-line).
-
-- (Optional) Read these two amazing resources on deploying Flask to Heroku:
-
-1. https://stackabuse.com/deploying-a-flask-application-to-heroku/
-
-2. https://www.jcchouinard.com/deploy-a-flask-app-on-heroku/
-
-- We will follow closely the above resource in the hands on session.
-
-### Setting Up Environment
-
-- Inside the `iykra-sentiment-analysis` directory, please run the following commands to install the libraries:
-
-`pip3 install -r requirements.txt`
-
-- If the above doesn't work, try:
-
-`pip install -r requirements.txt`
-
-- (Optional) If you're familiar with `virtualenv`, run the above command inside your virtual environment.
-
-- Please refer here: https://www.petanikode.com/python-virtualenv/.
-
-- Run the two commands below in your terminal (create environment file `.env` and run the `app`!):
-
-`cp env.sample .env`
-
-`python3 app.py` or `python app.py`
-
-- Check if it's running okay. You should see the following output:
+- Build an endpoint `/feedback` where it receives an input of something like:
 
 ```
-Geral-MacBook-Pro:iykra-sentiment-analysis geral$ python3.6 app.py
- * Serving Flask app "app" (lazy loading)
- * Environment: production
-   WARNING: This is a development server. Do not use it in a production deployment.
-   Use a production WSGI server instead.
- * Debug mode: off
- * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
- ```
-
-- If it's running okay then hit your API by running this `curl` command on your terminal:
-
-```
-curl --location --request POST 'http://localhost:5000/classify' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "text": "im glad ur doing well"
-}'
+{
+    "text": "im glad ur doing well",
+    "sentiment": "positive"
+}
 ```
 
-- You should see this output as the result:
+- The endpoint should do the following tasks:
+
+1. It checks if the `text` exists in either `positive.txt` or `negative.txt` (just do simple string matching). If it exists, we ignore the request, i.e. do nothing and return something like:
 
 ```
 {
   "data": {
+    "text": "im glad ur doing well",
     "sentiment": "positive",
-    "text": "im glad ur doing well"
+    "msg": "We have it already!"
   }
 }
 ```
 
-- You can change the value of the `text` field with any English sentence to see the predicted sentiment.
-
-- Alternatively, if the above doesn't work for you, you can access the model that I've deployed on `Heroku` by running this command:
+If it doesn't exist, then add it to the suitable file (either `positive.txt` or `negative.txt`) and return something like:
 
 ```
-curl --location --request POST 'https://iykra-sentiment-analysis-geral.herokuapp.com/classify' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "text": "im glad ur doing well"
-}'
+{
+  "data": {
+    "text": "im glad ur doing well",
+    "sentiment": "positive",
+    "msg": "Your feedback is well received!"
+  }
+}
 ```
 
-- Our goal for this hands on session is to get your model deployed in `Heroku` just like the above.
+To add the data to the text file, just append the text file.
 
-### Dataset
+2. Keep track of how many new data are added. Hint: Don't store it as a variable, but in an output file (Why?). For example, you can create a file called `count_new_data_added.txt` and update it every time you receive a feedback and add new data.
 
-Please refer here: https://github.com/geraldzakwan/iykra-sentiment-analysis/tree/main/data.
+3. Retrain your model (feature extractor and classifier) whenever `10` new data is added! Hint: Call `train.main()` function to retrain.
 
-### Libraries
+Note: In practice, `10` data is insignificant. We usually train if the data size grows `5-10%` larger from the previous version. In our case, that means `5-10k` data. We don't want to retrain too often as it waste resources. Also, it's common in industry to retrain periodically as well (every 2 weeks for example).
 
-Get to know about these two main libraries for our project:
+- Bonus:
 
-- `scikit-learn`
+1. Modify the `/feedback` endpoint so that it receives a list instead, e.g.
 
-- `flask`
+```
+{
+    "text": "[im glad ur doing well, im not glad ur doing well]",
+    "sentiment": "[positive, negative]"
+}
+```
 
-and briefly about these other libraries:
+2. Do simple model versioning every time the model is updated! For example, before the first model update, change the `classifier_latest.pk` and `feature_extractor_latest.pk` to `classifier_v0.pk` and `feature_extractor_v0.pk`. Then, after model update you will have `4` files. Furthermore, after the second model update, you will have `6` files (`v0`, `v1` and `latest`).
 
-- `pandas`
+Note that one benefit from versioning your model is that you can revert back if your latest model is bad!
 
-- `nltk`
+## Serious Notes
 
-- `gunicorn`
+You shouldn't change too much code! You probably add/remove/change the total of 20 lines at most for both assignments (unless you do the bonus part for Assignment 2).
 
 ## Questions
 
-- If you have difficulties or find some errors following the above instructions, please email me (`geraldi.dzakwan@gmail.com`) with email subject: `IYKRA Getting Ready - {Your name}`, e.g. `IYKRA Getting Ready - Geraldi Dzakwan`.
+- If you have questions or have difficulties with the assignment, please email me (`geraldi.dzakwan@gmail.com`) with email subject: `IYKRA Assignment - {Your name}`, e.g. `IYKRA Assignment - Geraldi Dzakwan`.
 
-- Explain your difficulties/errors and provide screenshot if any.
-
-- Thanks and see you Friday!
+- Thanks and good luck!
 
 Cheers,
 
