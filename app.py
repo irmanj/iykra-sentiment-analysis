@@ -56,10 +56,10 @@ def classify():
         label = app.classifier.predict(app.feature_extractor.transform([text]))[0]
 
         # EXERCISE 10: Return something like: {'text': text, 'sentiment':...}
-        # return reply_success(data={
-        #     ...,
-        #     ...
-        # })
+        return reply_success(data={
+            "text": text,
+            "sentiment": LABELS[label]
+        })
 
     return reply_error(code=400, message="Text is not specified")
 

@@ -29,6 +29,7 @@ def load_dataset():
 def prepare_data(X, y, test_size):
     # EXERCISE 3: Do 80/20 train test split
     # X_train, X_test, y_train, y_test = ...
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
     # Preprocess pipeline (see preprocess.py), convert sentences to their numerical representation
     X_train = [pr.preprocess(tweet, do_stem=True) for tweet in X_train]
@@ -41,19 +42,20 @@ def extract_feature(X, vec, fit):
     # Fit means that we train our extractor using the data (do this with train data)
     if fit:
         # return vec.
+        return vec.fit_transform(X)
         pass
 
     # No fit means that we only apply extraction to the data (do this with test data)
-    # return vec.
+    return vec.transform(X)
 
 def train(cls, X, y):
     # EXERCISE 5: Train classifier cls
-    # return cls.
+    return cls.fit(X, y)
     pass
 
 def predict(cls, X):
     # EXERCISE 6: Predict X
-    # return cls.
+    return cls.predict(X)
     pass
 
 def get_pred_statistics(y, pred):
@@ -74,12 +76,10 @@ def get_pred_statistics(y, pred):
 def save(feat_ext, cls, cls_filepath=CLASSIFIER_FILEPATH, feat_ext_filepath=FEATURE_EXTRACTOR_FILEPATH):
     # EXERCISE 7: Save feature extractor and classifier
     with open(feat_ext_filepath, 'wb') as outfile:
-        # pickle.dump(...)
-        pass
+        pickle.dump(feat_ext, outfile, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(cls_filepath, 'wb') as outfile:
-        # pickle.dump(...)
-        pass
+        pickle.dump(cls, outfile, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
@@ -91,13 +91,13 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = prepare_data(X, y, test_size=0.2)
 
     # EXERCISE 8: Use TF-IDF as feature extractor
-    # extractor = ...
+    extractor = TfidfVectorizer()
 
     # Apply feature extractor, e.g. TF-IDF, on train data
     X_train_vec = extract_feature(X_train, extractor, fit=True)
 
     # EXERCISE 9: Define your classifier, e.g. Naive Bayes
-    # classifier = ...
+    classifier = MultinomialNB()
 
     train(classifier, X_train_vec, y_train)
 

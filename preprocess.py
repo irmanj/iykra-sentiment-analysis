@@ -64,10 +64,14 @@ def stem(tweet):
     stemmer = nltk.stem.PorterStemmer()
 
     # EXERCISE 1: Simply tokenize by space
-    # words = ...
+    words = tweet.split()
 
     # EXERCISE 2: Stem each token
-    # words = ...
+    # words = nltk.tokenize.word_tokenize(tweet)
+    words = [stemmer.stem(token) for token in words]
+    s = []
+    for token in words:
+        s.append(stemmer.stem(token))
 
     # Rejoin them
     return ' '.join(words)
