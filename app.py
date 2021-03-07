@@ -56,7 +56,6 @@ def check_duplicate(text):
         search = phrase.split('. ')
         for s in search:
             if text in s:
-                # return s + "."
                 in_file = 'positive'
                 return "We have it already!"
     
@@ -65,7 +64,6 @@ def check_duplicate(text):
         search = phrase.split('. ')
         for s in search:
             if text in s:
-                # return s + "."
                 in_file = 'negative'
                 return "We have it already!"
     
@@ -78,7 +76,16 @@ def check_duplicate(text):
         #append text in negative file
         with open(DATA_FILEPATH + "/negative.txt", "a") as infile:
             infile.write("\n" + text)
-    
+                
+    # update counter add new data
+    with open(DATA_FILEPATH + "/count_new_data_added.txt", "r") as infile:
+        total = infile.readlines()
+
+    # update counter and write it to file
+    with open(DATA_FILEPATH + "/count_new_data_added.txt", "w") as infile:
+        total_new = int(total[0]) + 1
+        infile.write(str(total_new))
+
     # then return text that feedback is well received
     return "Your feedback is well received!"
 
