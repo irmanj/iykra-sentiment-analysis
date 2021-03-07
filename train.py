@@ -54,7 +54,6 @@ def train(cls, X, y):
     pass
 
 def predict(cls, X):
-    # EXERCISE 6: Predict X
     return cls.predict(X)
     pass
 

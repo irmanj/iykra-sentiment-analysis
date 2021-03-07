@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from config import FEATURE_EXTRACTOR_FILEPATH, CLASSIFIER_FILEPATH, LABELS
 
+from config import DATA_FILEPATH, FEATURE_EXTRACTOR_FILEPATH, CLASSIFIER_FILEPATH
+
 app = Flask(__name__)
 
 with open(FEATURE_EXTRACTOR_FILEPATH, 'rb') as infile:
@@ -35,6 +37,50 @@ def reply_error(code, message):
     response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
+
+# function to check duplicate text in positive.txt and negative.txt file
+def check_duplicate(text):
+
+    # get list positive tweets
+    with open(DATA_FILEPATH + "/positive.txt", "r") as infile:
+        positive_tweets = infile.readlines()
+
+    # get list negative tweets
+    with open(DATA_FILEPATH + "/negative.txt", "r") as infile:
+        negative_tweets = infile.readlines()
+
+    in_file = ''
+
+    #looping for found duplicate text in positive.txt file 
+    for phrase in positive_tweets:
+        search = phrase.split('. ')
+        for s in search:
+            if text in s:
+                # return s + "."
+                in_file = 'positive'
+                return "We have it already!"
+    
+    # looping for found duplicate text in negative.txt file 
+    for phrase in negative_tweets:
+        search = phrase.split('. ')
+        for s in search:
+            if text in s:
+                # return s + "."
+                in_file = 'negative'
+                return "We have it already!"
+    
+    # if feedback was not found then append the feedback on text
+    if in_file=='positive':
+        #append text in positive file
+        with open(DATA_FILEPATH + "/positive.txt", "a") as infile:
+            infile.write("\n" + text)
+    else:
+        #append text in negative file
+        with open(DATA_FILEPATH + "/negative.txt", "a") as infile:
+            infile.write("\n" + text)
+    
+    # then return text that feedback is well received
+    return "Your feedback is well received!"
 
 @app.route("/")
 def index():
@@ -73,11 +119,14 @@ def feedback():
         return reply_error(code=400, message="Supported method is 'GET' and 'POST'")
     
     if text:
+        is_duplicate = check_duplicate(text)
+
         label = app.classifier.predict(app.feature_extractor.transform([text]))[0]
 
         return reply_success(data={
             "text": text,
-            "sentiment": LABELS[label]
+            "sentiment": LABELS[label],
+            "msg": is_duplicate
         })
 
     return reply_error(code=400, message="Text is not specified")
