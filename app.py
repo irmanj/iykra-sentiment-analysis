@@ -9,6 +9,8 @@ from config import FEATURE_EXTRACTOR_FILEPATH, CLASSIFIER_FILEPATH, LABELS
 
 from config import DATA_FILEPATH, FEATURE_EXTRACTOR_FILEPATH, CLASSIFIER_FILEPATH
 
+from train import *
+
 app = Flask(__name__)
 
 with open(FEATURE_EXTRACTOR_FILEPATH, 'rb') as infile:
@@ -126,6 +128,16 @@ def feedback():
         return reply_error(code=400, message="Supported method is 'GET' and 'POST'")
     
     if text:
+        # get counter - how many new feedback added
+        with open(DATA_FILEPATH + "/count_new_data_added.txt", "r") as infile:
+            counter = infile.readlines()
+            counter = int(counter[0])
+
+        # retrain model if counter already 10 or its multiplies
+        if counter%10 == 0:
+            main()
+
+        # check duplicate data
         is_duplicate = check_duplicate(text)
 
         label = app.classifier.predict(app.feature_extractor.transform([text]))[0]
